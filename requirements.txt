@@ -1,0 +1,64 @@
+# Core Django and DRF
+Django
+djangorestframework
+django-cors-headers
+
+# Database and ORM
+psycopg2-binary
+dj-database-url
+
+# Authentication and Security
+django-oauth-toolkit
+PyJWT
+cryptography
+firebase-admin
+django-guardian
+
+django-rest-knox
+
+# Environment and Configuration
+python-decouple
+django-environ
+
+# Static Files and Media
+whitenoise
+django-storages
+boto3
+
+# Web Server
+gunicorn
+uvicorn[standard]
+
+# Security Enhancements
+django-security
+django-csp
+django-ratelimit
+django-axes
+django-session-security
+
+# Monitoring and Logging
+django-extensions
+django-debug-toolbar
+sentry-sdk[django]
+
+# API Documentation
+drf-spectacular
+
+# Additional security and utilities
+pyotp
+qrcode[pil]
+
+# Validation and Serialization
+marshmallow
+django-filter
+
+# Cache and Performance
+redis
+django-redis
+django-cachalot
+
+# Utilities
+celery
+django-celery-beat
+python-dateutil
+pytz
