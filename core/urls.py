@@ -20,7 +20,15 @@ from django.conf import settings
 from django.conf.urls.static import static
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
 
+# Import health check views
+from apps.core.health import health_check, readiness_check, liveness_check
+
 urlpatterns = [
+    # Health checks (for production monitoring)
+    path('api/v1/health/', health_check, name='health-check'),
+    path('api/v1/ready/', readiness_check, name='readiness-check'),
+    path('api/v1/live/', liveness_check, name='liveness-check'),
+    
     # Admin
     path('admin/', admin.site.urls),
     

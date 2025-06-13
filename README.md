@@ -235,45 +235,280 @@ Content-Type: application/json
 
 ## Production Deployment
 
-### 1. Security Hardening
+### 🚀 Quick Production Setup
 
+1. **Clone and Configure**
+```bash
+git clone <your-repository>
+cd docker-django-starter-kit
+cp .env.example .env
+```
+
+2. **Security Setup**
+```bash
+chmod +x security-setup.sh
+./security-setup.sh all
+```
+
+3. **Update Environment Configuration**
+Edit `.env` file with your production values:
+- Set `DEBUG=False`
+- Configure your domain in `ALLOWED_HOSTS`
+- Set strong database passwords
+- Configure SSL certificates
+- Set up monitoring credentials
+
+4. **Deploy to Production**
+```bash
+chmod +x deploy.sh
+./deploy.sh deploy
+```
+
+### 🔒 Security Hardening
+
+#### 1. Generate Secure Credentials
 ```bash
 # Generate secure secret key
 python -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())'
 
-# Set production environment
-export DJANGO_ENV=production
-export DEBUG=False
+# Generate secure database password
+openssl rand -base64 32
 ```
 
-### 2. SSL/TLS Configuration
+#### 2. SSL/TLS Configuration
 
-Update `nginx/nginx.conf` to enable HTTPS:
+**For Production:**
+- Obtain SSL certificate from a trusted CA (Let's Encrypt, etc.)
+- Place certificates in `nginx/ssl/` directory
+- Update domain name in `nginx/nginx.production.conf`
+
+**For Testing:**
+```bash
+# Generate self-signed certificate (development only)
+mkdir -p nginx/ssl
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+    -keyout nginx/ssl/key.pem \
+    -out nginx/ssl/cert.pem \
+    -subj "/C=US/ST=State/L=City/O=Organization/CN=localhost"
+```
+
+#### 3. Database Security
+```sql
+-- Create dedicated database user with limited privileges
+CREATE USER saas_app WITH PASSWORD 'secure_password';
+CREATE DATABASE saas_production OWNER saas_app;
+GRANT CONNECT ON DATABASE saas_production TO saas_app;
+GRANT USAGE ON SCHEMA public TO saas_app;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO saas_app;
+GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO saas_app;
+```
+
+#### 4. Firewall Configuration
+```bash
+# Ubuntu/Debian firewall setup
+sudo ufw allow ssh
+sudo ufw allow 80/tcp
+sudo ufw allow 443/tcp
+sudo ufw enable
+```
+
+### 📊 Monitoring Setup
+
+#### Health Checks
+- **Application Health**: `https://your-domain.com/api/v1/health/`
+- **Readiness Check**: `https://your-domain.com/api/v1/ready/`
+- **Liveness Check**: `https://your-domain.com/api/v1/live/`
+
+#### Monitoring Tools
+- **Flower (Celery)**: `https://your-domain.com/flower/`
+- **Admin Panel**: `https://your-domain.com/admin/`
+- **API Documentation**: `https://your-domain.com/api/docs/`
+
+#### Log Monitoring
+```bash
+# View application logs
+./deploy.sh logs web
+
+# View all service logs
+./deploy.sh logs
+
+# Monitor system status
+./monitor.sh
+```
+
+### 🔄 Backup and Recovery
+
+#### Automated Backups
+```bash
+# Create backup
+./deploy.sh backup
+
+# Schedule daily backups (crontab)
+0 2 * * * /path/to/project/backup.sh
+```
+
+#### Manual Database Backup
+```bash
+# Create backup
+docker-compose -f docker-compose.production.yml exec db pg_dump -U saas_user saas_production > backup.sql
+
+# Restore backup
+docker-compose -f docker-compose.production.yml exec -T db psql -U saas_user saas_production < backup.sql
+```
+
+### ⚖️ Scaling
+
+#### Horizontal Scaling
+```bash
+# Scale web servers
+docker-compose -f docker-compose.production.yml up -d --scale web=3
+
+# Scale Celery workers
+docker-compose -f docker-compose.production.yml up -d --scale celery=2
+```
+
+#### Load Balancer Configuration
+Update `nginx/nginx.production.conf` upstream configuration:
 ```nginx
-server {
-    listen 443 ssl http2;
-    ssl_certificate /etc/nginx/ssl/cert.pem;
-    ssl_certificate_key /etc/nginx/ssl/key.pem;
-    # ... additional SSL configuration
+upstream django {
+    server web:8000;
+    server web_2:8000;
+    server web_3:8000;
 }
 ```
 
-### 3. Database Security
+### 🛠️ Maintenance
 
-```sql
--- Create dedicated database user
-CREATE USER saas_app WITH PASSWORD 'secure_password';
-GRANT CONNECT ON DATABASE saas_app TO saas_app;
-GRANT USAGE ON SCHEMA public TO saas_app;
-GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO saas_app;
+#### Service Management
+```bash
+# Check service status
+./deploy.sh status
+
+# View logs
+./deploy.sh logs [service_name]
+
+# Restart services
+docker-compose -f docker-compose.production.yml restart
+
+# Update application
+git pull
+docker-compose -f docker-compose.production.yml build --no-cache
+docker-compose -f docker-compose.production.yml up -d
 ```
 
-### 4. Monitoring Setup
+#### Database Migrations
+```bash
+# Run migrations
+docker-compose -f docker-compose.production.yml exec web python manage.py migrate
 
-Configure Sentry for error tracking:
-```python
-SENTRY_DSN = 'your-sentry-dsn'
+# Create superuser
+docker-compose -f docker-compose.production.yml exec web python manage.py createsuperuser
+
+# Collect static files
+docker-compose -f docker-compose.production.yml exec web python manage.py collectstatic --noinput
 ```
+
+### 🚨 Troubleshooting
+
+#### Common Issues
+
+1. **SSL Certificate Issues**
+```bash
+# Check certificate validity
+openssl x509 -in nginx/ssl/cert.pem -text -noout
+
+# Test SSL configuration
+curl -I https://your-domain.com
+```
+
+2. **Database Connection Issues**
+```bash
+# Check database connectivity
+docker-compose -f docker-compose.production.yml exec web python manage.py dbshell
+
+# Check database logs
+docker-compose -f docker-compose.production.yml logs db
+```
+
+3. **Service Health Issues**
+```bash
+# Check service health
+curl https://your-domain.com/api/v1/health/
+
+# Check individual service status
+docker-compose -f docker-compose.production.yml ps
+```
+
+4. **Performance Issues**
+```bash
+# Monitor resource usage
+docker stats
+
+# Check application metrics
+./monitor.sh
+
+# Analyze slow queries
+docker-compose -f docker-compose.production.yml exec db psql -U saas_user -d saas_production -c "SELECT query, mean_time, calls FROM pg_stat_statements ORDER BY mean_time DESC LIMIT 10;"
+```
+
+### 📋 Production Checklist
+
+**Before Deployment:**
+- [ ] SECRET_KEY is secure and unique
+- [ ] DEBUG=False in production
+- [ ] ALLOWED_HOSTS configured with production domains
+- [ ] SSL certificates obtained and configured
+- [ ] Database passwords are secure
+- [ ] Email configuration tested
+- [ ] Backup procedures established
+- [ ] Monitoring set up
+- [ ] Log rotation configured
+- [ ] Firewall rules applied
+
+**After Deployment:**
+- [ ] Health checks passing
+- [ ] SSL certificate valid
+- [ ] Admin panel accessible
+- [ ] API endpoints working
+- [ ] Email notifications working
+- [ ] Backups running successfully
+- [ ] Monitoring alerts configured
+- [ ] Performance benchmarks met
+
+### 🔐 Government-Level Security Compliance
+
+This application implements security measures suitable for government and enterprise deployments:
+
+#### Security Features
+- **Multi-Factor Authentication (MFA)** with TOTP
+- **Role-Based Access Control (RBAC)** with hierarchical permissions
+- **Attribute-Based Access Control (ABAC)** for context-aware security
+- **Account lockout** protection against brute force attacks
+- **Comprehensive audit logging** for compliance
+- **Session management** with device tracking
+- **Password strength** validation and history
+- **Rate limiting** and DDoS protection
+- **Security headers** and CSP policies
+- **Data encryption** at rest and in transit
+
+#### Compliance Standards
+- **NIST Cybersecurity Framework** aligned
+- **OWASP Top 10** protections implemented
+- **SOC 2** compliance ready
+- **GDPR** privacy controls included
+- **HIPAA** security safeguards available
+
+### 📞 Support
+
+For production support and security questions:
+- Create an issue in the repository
+- Contact the development team
+- Review security documentation
+- Check troubleshooting guides
+
+---
+
+**⚠️ Important Security Notice**: This is a production-ready template with government-level security standards. Always review and customize security settings for your specific use case and compliance requirements.
 
 ## Development
 
