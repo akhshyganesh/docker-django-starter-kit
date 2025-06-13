@@ -38,18 +38,7 @@ python manage.py collectstatic --noinput --clear
 if [ "$DJANGO_ENV" = "production" ]; then
     echo "Starting production server with Gunicorn..."
     exec gunicorn core.wsgi:application \
-        --bind 0.0.0.0:8000 \
-        --workers 4 \
-        --worker-class gevent \
-        --worker-connections 1000 \
-        --max-requests 1000 \
-        --max-requests-jitter 50 \
-        --timeout 30 \
-        --keep-alive 2 \
-        --log-level info \
-        --access-logfile - \
-        --error-logfile - \
-        --capture-output
+        --config /app/gunicorn.conf.py
 else
     echo "Starting development server..."
     exec python manage.py runserver 0.0.0.0:8000

@@ -29,7 +29,13 @@ class Permission(AuditModel):
     permission_type = models.CharField(max_length=20, choices=PERMISSION_TYPES, default='action')
     
     # For resource-based permissions
-    content_type = models.ForeignKey(ContentType, on_delete=models.CASCADE, null=True, blank=True)
+    content_type = models.ForeignKey(
+        ContentType, 
+        on_delete=models.CASCADE, 
+        null=True, 
+        blank=True,
+        related_name='custom_permissions'  # Avoid conflict with auth.Permission
+    )
     
     # Additional attributes for ABAC
     attributes = models.JSONField(default=dict, blank=True)
@@ -183,8 +189,16 @@ class UserPermission(AuditModel):
     Direct user permissions (bypassing roles)
     """
     
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='user_permissions')
-    permission = models.ForeignKey(Permission, on_delete=models.CASCADE, related_name='user_permissions')
+    user = models.ForeignKey(
+        User, 
+        on_delete=models.CASCADE, 
+        related_name='custom_user_permissions'  # Avoid conflict with built-in user_permissions
+    )
+    permission = models.ForeignKey(
+        Permission, 
+        on_delete=models.CASCADE, 
+        related_name='custom_user_permissions'
+    )
     
     # Permission grant/deny
     granted = models.BooleanField(default=True)

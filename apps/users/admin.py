@@ -13,6 +13,7 @@ User = get_user_model()
 class UserRoleInline(admin.TabularInline):
     """Inline for user roles"""
     model = UserRole
+    fk_name = 'user'  # Specify which ForeignKey to use
     extra = 0
     fields = ['role', 'assigned_by', 'valid_from', 'valid_until', 'is_active']
     readonly_fields = ['assigned_by', 'created_at']
@@ -21,6 +22,7 @@ class UserRoleInline(admin.TabularInline):
 class UserPermissionInline(admin.TabularInline):
     """Inline for user permissions"""
     model = UserPermission
+    fk_name = 'user'  # Specify which ForeignKey to use
     extra = 0
     fields = ['permission', 'granted', 'assigned_by', 'valid_from', 'valid_until', 'is_active']
     readonly_fields = ['assigned_by', 'created_at']
@@ -29,6 +31,7 @@ class UserPermissionInline(admin.TabularInline):
 class UserProfileInline(admin.StackedInline):
     """Inline for user profile"""
     model = UserProfile
+    fk_name = 'user'  # Specify which ForeignKey to use (though there's only one, being explicit)
     can_delete = False
     fields = [
         'company', 'job_title', 'department',

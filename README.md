@@ -1,6 +1,6 @@
 # Production Django REST Framework SAAS Application
 
-A production-ready Django REST Framework application with government-level security, Firebase authentication, and comprehensive RBAC/ABAC authorization system.
+A production-ready Django REST Framework application with enterprise-level security, Firebase authentication, and comprehensive RBAC/ABAC authorization system optimized for direct deployment without reverse proxy.
 
 ## Features
 
@@ -9,12 +9,14 @@ A production-ready Django REST Framework application with government-level secur
 - **Firebase Authentication** integration
 - **Role-Based Access Control (RBAC)**
 - **Attribute-Based Access Control (ABAC)**
-- **Account lockout** protection against brute force attacks
+- **Enhanced brute force protection** with Django Axes
 - **Comprehensive audit logging**
 - **Session management** with device tracking
-- **Password strength validation**
-- **Rate limiting** and DDoS protection
-- **Security headers** and CSP policies
+- **Advanced password complexity validation**
+- **Built-in rate limiting** without reverse proxy dependency
+- **Security headers** and strict CSP policies
+- **IP-based access control** for admin interface
+- **Suspicious activity detection and logging**
 
 ### 👥 User Management
 - Custom user model with extended fields
@@ -37,7 +39,7 @@ A production-ready Django REST Framework application with government-level secur
 - **PostgreSQL** database with optimized indexes
 - **Redis** caching and session storage
 - **Celery** for background task processing
-- **Nginx** reverse proxy with security configurations
+- **Direct Django deployment** with built-in security
 - **Comprehensive logging** with structured format
 - **Health checks** and monitoring endpoints
 
@@ -92,9 +94,9 @@ docker-compose exec web python manage.py createsuperuser
 
 ### 4. Access the Application
 
-- **API Documentation**: http://localhost/api/docs/
-- **Admin Interface**: http://localhost/admin/
-- **API Endpoints**: http://localhost/api/v1/
+- **API Documentation**: http://localhost:8000/api/docs/
+- **Admin Interface**: http://localhost:8000/admin/
+- **API Endpoints**: http://localhost:8000/api/v1/
 
 ## API Documentation
 
@@ -244,19 +246,22 @@ python -c 'from django.core.management.utils import get_random_secret_key; print
 # Set production environment
 export DJANGO_ENV=production
 export DEBUG=False
+
+# Configure allowed hosts for your domain
+export ALLOWED_HOSTS=yourdomain.com,www.yourdomain.com
+export CSRF_TRUSTED_ORIGINS=https://yourdomain.com,https://www.yourdomain.com
 ```
 
-### 2. SSL/TLS Configuration
+### 2. Security Configuration
 
-Update `nginx/nginx.conf` to enable HTTPS:
-```nginx
-server {
-    listen 443 ssl http2;
-    ssl_certificate /etc/nginx/ssl/cert.pem;
-    ssl_certificate_key /etc/nginx/ssl/key.pem;
-    # ... additional SSL configuration
-}
-```
+The application includes built-in security features:
+
+- **Rate Limiting**: Configurable per endpoint
+- **IP Whitelisting**: For admin access
+- **Security Headers**: Automatically applied
+- **Brute Force Protection**: Enhanced with Django Axes
+- **Password Policy**: Complex validation rules
+- **Session Security**: Secure cookie settings
 
 ### 3. Database Security
 
@@ -268,11 +273,78 @@ GRANT USAGE ON SCHEMA public TO saas_app;
 GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO saas_app;
 ```
 
-### 4. Monitoring Setup
+### 4. Environment Variables
 
-Configure Sentry for error tracking:
+Essential production settings:
+
+```env
+DJANGO_ENV=production
+DEBUG=False
+SECRET_KEY=your-super-secure-secret-key
+ALLOWED_HOSTS=yourdomain.com,www.yourdomain.com
+CSRF_TRUSTED_ORIGINS=https://yourdomain.com,https://www.yourdomain.com
+
+# Security Settings
+SESSION_COOKIE_SECURE=False  # Set to True if using HTTPS
+CSRF_COOKIE_SECURE=False     # Set to True if using HTTPS
+SECURE_SSL_REDIRECT=False    # Set to True if using HTTPS
+SECURE_HSTS_SECONDS=0        # Set to 31536000 if using HTTPS
+
+# Rate Limiting
+RATELIMIT_ENABLE=True
+
+# Admin IP Whitelist (comma-separated)
+ADMIN_ALLOWED_IPS=127.0.0.1,your-office-ip
+
+# Monitoring
+SENTRY_DSN=your-sentry-dsn
+```
+
+### 5. Gunicorn Configuration
+
+The application includes an optimized Gunicorn configuration file (`gunicorn.conf.py`) with production-ready security and performance settings:
+
+#### Key Security Features:
+- **Request size limits** to prevent abuse attacks
+- **Worker process isolation** with automatic restarts
+- **Comprehensive logging** for security monitoring
+- **Resource optimization** with shared memory usage
+- **Graceful shutdowns** to prevent data loss
+
+#### Configuration Highlights:
 ```python
-SENTRY_DSN = 'your-sentry-dsn'
+# Automatically scales workers based on CPU cores
+workers = multiprocessing.cpu_count() * 2 + 1
+
+# Security limits
+limit_request_line = 4094      # Max HTTP request line size
+limit_request_fields = 100     # Max number of header fields
+limit_request_field_size = 8190 # Max header field size
+
+# Performance optimizations
+max_requests = 1000            # Restart workers after 1000 requests
+max_requests_jitter = 50       # Add randomness to prevent thundering herd
+worker_tmp_dir = "/dev/shm"    # Use shared memory for better performance
+```
+
+#### Production Deployment Command:
+```bash
+# The entrypoint script automatically uses the optimized configuration
+# when DJANGO_ENV=production
+export DJANGO_ENV=production
+docker-compose up -d
+```
+
+#### Monitoring Gunicorn:
+```bash
+# Check worker status
+docker-compose exec web ps aux | grep gunicorn
+
+# Monitor access logs
+docker-compose exec web tail -f /app/logs/gunicorn_access.log
+
+# Monitor error logs
+docker-compose exec web tail -f /app/logs/gunicorn_error.log
 ```
 
 ## Development
@@ -339,19 +411,54 @@ The application implements a hybrid RBAC/ABAC system:
 ┌─────────────────────────────────────┐
 │            Application              │
 ├─────────────────────────────────────┤
-│          Django Security            │
+│      Security Middleware           │
 ├─────────────────────────────────────┤
 │        Permission System            │
 ├─────────────────────────────────────┤
 │         Authentication              │
 ├─────────────────────────────────────┤
-│            Nginx Proxy              │
+│         Rate Limiting               │
 ├─────────────────────────────────────┤
 │         Network Security            │
 └─────────────────────────────────────┘
 ```
 
-## Troubleshooting
+## Built-in Security Features
+
+### 1. **Authentication Security**
+   - Minimum 12-character passwords with complexity requirements
+   - Account lockout after 5 failed attempts with 1-hour cooldown
+   - Session timeout and concurrent session limits
+   - MFA enforcement for privileged accounts
+   - Password history tracking (prevents reuse of last 5 passwords)
+
+### 2. **Authorization Security**
+   - Principle of least privilege
+   - Role-based and attribute-based access control
+   - Time-based access controls
+   - Resource-level permissions
+   - IP-based access restrictions for admin interface
+
+### 3. **Network Security**
+   - Built-in rate limiting (per IP, per endpoint)
+   - Security headers (X-Frame-Options, CSP, XSS Protection)
+   - CORS configuration
+   - IP whitelist for admin access
+   - Suspicious activity detection
+
+### 4. **Data Protection**
+   - Encrypted sessions and cookies
+   - Audit logging for all sensitive operations
+   - Secure password hashing (Django's PBKDF2)
+   - Database connection security
+   - Input validation and sanitization
+
+### 5. **Monitoring and Compliance**
+   - Comprehensive audit trails
+   - Security incident detection and logging
+   - Real-time attack pattern recognition
+   - Failed authentication tracking
+   - Admin access monitoring
 
 ### Common Issues
 

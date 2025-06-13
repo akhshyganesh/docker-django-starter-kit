@@ -19,8 +19,13 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
+from apps.core.views import health_check, security_headers_test
 
 urlpatterns = [
+    # Health check and security test endpoints
+    path('health/', health_check, name='health_check'),
+    path('security-test/', security_headers_test, name='security_test'),
+    
     # Admin
     path('admin/', admin.site.urls),
     

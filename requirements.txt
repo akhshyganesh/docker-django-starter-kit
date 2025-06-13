@@ -1,64 +1,51 @@
 # Core Django and DRF
-Django
-djangorestframework
-django-cors-headers
+Django==4.2.16
+djangorestframework==3.14.0
+django-cors-headers==4.3.1
 
 # Database and ORM
-psycopg2-binary
-dj-database-url
+psycopg2-binary==2.9.9
+dj-database-url==2.1.0
 
 # Authentication and Security
-django-oauth-toolkit
-PyJWT
-cryptography
-firebase-admin
-django-guardian
-
-django-rest-knox
+PyJWT==2.8.0
+cryptography>=41.0.0,<42.0.0
+firebase-admin==6.3.0
+django-guardian==2.4.0
+django-rest-knox==4.2.0
 
 # Environment and Configuration
-python-decouple
-django-environ
+python-decouple==3.8
 
 # Static Files and Media
-whitenoise
-django-storages
-boto3
+whitenoise==6.6.0
 
 # Web Server
-gunicorn
-uvicorn[standard]
+gunicorn==21.2.0
 
 # Security Enhancements
-django-security
-django-csp
-django-ratelimit
-django-axes
-django-session-security
+django-csp==3.7
+django-ratelimit==4.1.0
+django-axes==6.1.1
 
 # Monitoring and Logging
-django-extensions
-django-debug-toolbar
-sentry-sdk[django]
+sentry-sdk[django]==1.38.0
 
 # API Documentation
-drf-spectacular
+drf-spectacular==0.26.5
 
 # Additional security and utilities
-pyotp
-qrcode[pil]
+pyotp==2.9.0
+qrcode[pil]==7.4.2
 
 # Validation and Serialization
-marshmallow
-django-filter
+django-filter==23.5
 
 # Cache and Performance
-redis
-django-redis
-django-cachalot
+redis==5.0.1
+django-redis==5.4.0
 
 # Utilities
-celery
-django-celery-beat
-python-dateutil
-pytz
+celery==5.3.4
+django-celery-beat==2.5.0
+python-dateutil==2.8.2

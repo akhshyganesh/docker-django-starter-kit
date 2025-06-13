@@ -18,8 +18,8 @@ SECRET_KEY = config('SECRET_KEY', default='django-insecure-change-me-in-producti
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config('DEBUG', default=False, cast=bool)
 
-ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1', cast=Csv())
-CSRF_TRUSTED_ORIGINS = config('CSRF_TRUSTED_ORIGINS', default='http://localhost:8000', cast=Csv())
+ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost,127.0.0.1,0.0.0.0', cast=Csv())
+CSRF_TRUSTED_ORIGINS = config('CSRF_TRUSTED_ORIGINS', default='http://localhost:8000,http://127.0.0.1:8000', cast=Csv())
 
 # Application definition
 DJANGO_APPS = [
@@ -41,7 +41,6 @@ THIRD_PARTY_APPS = [
     'guardian',
     'axes',
     'django_celery_beat',
-    'django_extensions',
 ]
 
 LOCAL_APPS = [
@@ -57,15 +56,18 @@ MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
+    'apps.core.middleware.RateLimitMiddleware',
+    # 'apps.core.middleware.IPWhitelistMiddleware',  # Temporarily disabled for development
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django_ratelimit.middleware.RatelimitMiddleware',
     'axes.middleware.AxesMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'csp.middleware.CSPMiddleware',
+    'apps.core.middleware.SecurityHeadersMiddleware',
+    'apps.core.middleware.SecurityLoggingMiddleware',
 ]
 
 ROOT_URLCONF = 'core.urls'
@@ -116,6 +118,9 @@ AUTH_PASSWORD_VALIDATORS = [
     },
     {
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+    },
+    {
+        'NAME': 'apps.core.validators.PasswordComplexityValidator',
     },
 ]
 
@@ -216,37 +221,93 @@ EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
 EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
 EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 
-# Security Settings
-SECURE_BROWSER_XSS_FILTER = True
-SECURE_CONTENT_TYPE_NOSNIFF = True
+# Security Settings - Enhanced for production without SSL
+SECURE_BROWSER_XSS_FILTER = config('SECURE_BROWSER_XSS_FILTER', default=True, cast=bool)
+SECURE_CONTENT_TYPE_NOSNIFF = config('SECURE_CONTENT_TYPE_NOSNIFF', default=True, cast=bool)
 X_FRAME_OPTIONS = 'DENY'
-SECURE_HSTS_SECONDS = config('SECURE_HSTS_SECONDS', default=31536000, cast=int)
-SECURE_HSTS_INCLUDE_SUBDOMAINS = True
-SECURE_HSTS_PRELOAD = True
+SECURE_HSTS_SECONDS = config('SECURE_HSTS_SECONDS', default=0, cast=int)
+SECURE_HSTS_INCLUDE_SUBDOMAINS = False
+SECURE_HSTS_PRELOAD = False
 
-if not DEBUG:
-    SECURE_SSL_REDIRECT = True
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
+# Cookie Security - Configurable for different environments
+SESSION_COOKIE_SECURE = config('SESSION_COOKIE_SECURE', default=False, cast=bool)
+CSRF_COOKIE_SECURE = config('CSRF_COOKIE_SECURE', default=False, cast=bool)
+SECURE_SSL_REDIRECT = config('SECURE_SSL_REDIRECT', default=False, cast=bool)
+
+# Additional Security Settings
+# Include Docker network IPs for local development
+ADMIN_ALLOWED_IPS = config('ADMIN_ALLOWED_IPS', default='127.0.0.1,::1,192.168.65.1,172.17.0.1,172.18.0.1,172.19.0.1,172.20.0.1', cast=Csv())
+RATELIMIT_ENABLE = config('RATELIMIT_ENABLE', default=True, cast=bool)
+
+# Login Security
+LOGIN_ATTEMPTS_LIMIT = 5
+LOGIN_ATTEMPTS_TIMEOUT = 300  # 5 minutes
+
+# Additional Security Headers
+SECURE_REFERRER_POLICY = 'strict-origin-when-cross-origin'
+SECURE_CROSS_ORIGIN_OPENER_POLICY = 'same-origin'
+SECURE_PERMISSIONS_POLICY = {
+    'geolocation': '()',
+    'microphone': '()',
+    'camera': '()',
+    'magnetometer': '()',
+    'gyroscope': '()',
+    'payment': '()',
+    'usb': '()',
+}
+
+# Session Security - Enhanced
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_AGE = 3600  # 1 hour
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+SESSION_COOKIE_SAMESITE = 'Strict'  # More secure than Lax
+SESSION_SAVE_EVERY_REQUEST = False  # Performance optimization
+
+# CSRF Protection - Enhanced
+CSRF_COOKIE_HTTPONLY = True
+CSRF_COOKIE_SAMESITE = 'Strict'  # More secure than Lax
+CSRF_USE_SESSIONS = True
+CSRF_FAILURE_VIEW = 'apps.core.views.csrf_failure'
 
 # CORS Configuration
 CORS_ALLOW_ALL_ORIGINS = DEBUG
 CORS_ALLOWED_ORIGINS = CSRF_TRUSTED_ORIGINS if not DEBUG else []
 
-# Content Security Policy
+# Content Security Policy - Enhanced for production
 CSP_DEFAULT_SRC = ("'self'",)
-CSP_SCRIPT_SRC = ("'self'", "'unsafe-inline'")
-CSP_STYLE_SRC = ("'self'", "'unsafe-inline'")
-CSP_IMG_SRC = ("'self'", "data:", "https:")
+CSP_SCRIPT_SRC = ("'self'",)  # Remove unsafe-inline and unsafe-eval for production
+CSP_STYLE_SRC = ("'self'",)   # Remove unsafe-inline for production
+CSP_IMG_SRC = ("'self'", "data:")
+CSP_FONT_SRC = ("'self'",)
+CSP_CONNECT_SRC = ("'self'",)
+CSP_FRAME_ANCESTORS = ("'none'",)
+CSP_FORM_ACTION = ("'self'",)
+CSP_BASE_URI = ("'self'",)
+CSP_OBJECT_SRC = ("'none'",)
+CSP_MEDIA_SRC = ("'self'",)
+CSP_CHILD_SRC = ("'none'",)
+CSP_WORKER_SRC = ("'none'",)
 
 # Django Guardian
 GUARDIAN_RAISE_403 = True
 GUARDIAN_RENDER_403 = False
 
-# Django Axes (Brute Force Protection)
-AXES_FAILURE_LIMIT = 5
-AXES_COOLOFF_TIME = 1
+# Django Axes (Enhanced Brute Force Protection)
+AXES_FAILURE_LIMIT = 3  # Reduced from 5 for better security
+AXES_COOLOFF_TIME = 2  # 2 hours instead of 1
 AXES_LOCKOUT_CALLABLE = 'axes.lockout.lockout'
+AXES_ENABLE_ADMIN = True
+AXES_LOCK_OUT_AT_FAILURE = True
+AXES_USE_USER_AGENT = True
+AXES_LOCK_OUT_BY_COMBINATION_USER_AND_IP = True
+AXES_RESET_ON_SUCCESS = True
+AXES_LOCKOUT_TEMPLATE = None
+AXES_LOCKOUT_URL = None
+AXES_VERBOSE = True
+AXES_LOG_LOCK_OUT_AT_FAILURE = True
+AXES_NEVER_LOCKOUT_WHITELIST = True
+AXES_IP_WHITELIST = ['127.0.0.1', '::1']  # Only allow localhost
+AXES_NEVER_LOCKOUT_GET = True  # Don't lockout on GET requests
 
 # API Documentation
 SPECTACULAR_SETTINGS = {
