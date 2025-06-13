@@ -28,14 +28,20 @@ COPY requirements.txt /app/
 RUN pip install --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
+# Copy entrypoint script first and set permissions
+COPY entrypoint.sh /app/entrypoint.sh
+RUN chmod +x /app/entrypoint.sh
+
 # Copy project files
 COPY . /app/
 
 # Create necessary directories
 RUN mkdir -p /app/staticfiles /app/mediafiles /app/logs
 
-# Set proper permissions
+# Set proper permissions for all files
 RUN chown -R django:django /app
+
+# Ensure entrypoint is executable (redundant but safe)
 RUN chmod +x /app/entrypoint.sh
 
 # Switch to non-root user
@@ -44,5 +50,5 @@ USER django
 # Expose port
 EXPOSE 8000
 
-# Set entrypoint
+# Set entrypoint using absolute path
 ENTRYPOINT ["/app/entrypoint.sh"]

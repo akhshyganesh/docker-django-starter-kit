@@ -4,6 +4,9 @@ set -e
 
 echo "Starting Django application..."
 
+# Ensure we're in the correct directory
+cd /app
+
 # Wait for database to be ready
 python /app/wait_for_db.py
 
