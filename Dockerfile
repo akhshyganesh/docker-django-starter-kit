@@ -28,8 +28,10 @@ COPY requirements.txt /app/
 RUN pip install --upgrade pip && \
     pip install --no-cache-dir -r requirements.txt
 
-# Copy entrypoint script first and set permissions
+# Copy entrypoint script
 COPY entrypoint.sh /app/entrypoint.sh
+
+# Make entrypoint script executable
 RUN chmod +x /app/entrypoint.sh
 
 # Copy project files
