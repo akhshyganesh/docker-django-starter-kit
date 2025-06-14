@@ -1,0 +1,149 @@
+MIT License
+
+Copyright (c) 2025 Akhshy Ganesh B
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+---
+
+## Third-Party Licenses
+
+This project includes several third-party packages with their own licenses:
+
+### Core Dependencies
+- **Django** (BSD-3-Clause License)
+- **Django REST Framework** (BSD-2-Clause License)
+- **PostgreSQL** (PostgreSQL License)
+- **Redis** (BSD-3-Clause License)
+- **Celery** (BSD-3-Clause License)
+
+### Security Dependencies
+- **Firebase Admin SDK** (Apache-2.0 License)
+- **PyJWT** (MIT License)
+- **cryptography** (Apache-2.0 or BSD License)
+- **django-axes** (MIT License)
+- **django-cors-headers** (MIT License)
+- **django-csp** (BSD-3-Clause License)
+- **django-guardian** (BSD-2-Clause License)
+- **django-ratelimit** (Apache-2.0 License)
+
+### Development Dependencies
+- **Gunicorn** (MIT License)
+- **WhiteNoise** (MIT License)
+- **Sentry SDK** (MIT License)
+- **python-decouple** (MIT License)
+
+### Optional Dependencies
+- **pyotp** (MIT License) - for Multi-Factor Authentication
+- **qrcode** (BSD License) - for QR code generation
+- **Pillow** (PIL License) - for image processing
+
+---
+
+## License Compliance Notes
+
+### Commercial Use
+✅ **Permitted**: You may use this software for commercial purposes.
+
+### Modification
+✅ **Permitted**: You may modify the source code.
+
+### Distribution
+✅ **Permitted**: You may distribute the original or modified software.
+
+### Private Use
+✅ **Permitted**: You may use this software privately.
+
+### Sublicensing
+✅ **Permitted**: You may grant a sublicense to modify and distribute this software to third parties.
+
+### Liability
+❌ **Not Provided**: The software is provided "as is" without warranty of any kind.
+
+### Warranty
+❌ **Not Provided**: No warranty is provided with this software.
+
+---
+
+## Attribution Requirements
+
+When using this software, you must:
+
+1. **Include the copyright notice** in all copies or substantial portions of the software
+2. **Include the license text** in all copies or substantial portions of the software
+3. **Preserve all copyright notices** in the source code
+
+### Recommended Attribution Format
+
+For web applications, include in your about page or footer:
+```
+Powered by Django REST Framework SAAS Starter Kit
+Licensed under MIT License
+```
+
+For documentation or README files:
+```markdown
+This project is based on the Django REST Framework SAAS Starter Kit
+(https://github.com/akhshyganesh/docker-django-starter-kit) licensed under MIT License.
+```
+
+---
+
+## Security and Compliance
+
+### GDPR Compliance
+This software includes features to help with GDPR compliance, but you are responsible for:
+- Implementing proper data processing procedures
+- Obtaining necessary consents
+- Ensuring data protection measures are adequate for your use case
+
+### Security Notice
+While this software includes security features, you are responsible for:
+- Keeping dependencies up to date
+- Implementing proper security measures for your deployment
+- Regular security audits and testing
+- Compliance with applicable security standards
+
+### Export Control
+This software may be subject to export control laws. Users are responsible for
+compliance with applicable export control regulations.
+
+---
+
+## Contact Information
+
+For license-related questions or commercial licensing inquiries, please contact:
+- **Project Repository**: https://github.com/akhshyganesh/docker-django-starter-kit
+- **GitHub Issues**: [Create an issue](https://github.com/akhshyganesh/docker-django-starter-kit/issues)
+- **Author**: Akhshy Ganesh B
+- **Email**: akhshy.balakannan@gmail.com
+
+---
+
+## Changelog
+
+### Version 1.0.0 (2025-06-14)
+- Initial release under MIT License
+- Comprehensive Django REST Framework SAAS application
+- Enterprise-grade security features
+- Production-ready deployment configuration
+
+---
+
+*This license file was generated on June 14, 2025*
