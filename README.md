@@ -1,511 +1,941 @@
-# Production Django REST Framework SAAS Application
+# 🚀 Django REST Framework SAAS Starter Kit
 
-A production-ready Django REST Framework application with enterprise-level security, Firebase authentication, and comprehensive RBAC/ABAC authorization system optimized for direct deployment without reverse proxy.
+> **A complete, production-ready Django REST Framework application with enterprise-grade security and modern architecture.**
 
-## Features
+This starter kit provides everything you need to build a scalable SAAS application with government-level security, comprehensive user management, and advanced permission systems - all ready to deploy in minutes!
 
-### 🔐 Security Features
-- **Multi-Factor Authentication (MFA)** with TOTP support
-- **Firebase Authentication** integration
-- **Role-Based Access Control (RBAC)**
-- **Attribute-Based Access Control (ABAC)**
-- **Enhanced brute force protection** with Django Axes
-- **Comprehensive audit logging**
-- **Session management** with device tracking
-- **Advanced password complexity validation**
-- **Built-in rate limiting** without reverse proxy dependency
-- **Security headers** and strict CSP policies
-- **IP-based access control** for admin interface
-- **Suspicious activity detection and logging**
+---
 
-### 👥 User Management
-- Custom user model with extended fields
-- User profiles with personal and professional information
-- User type classification (Admin, Manager, Employee, Client, Guest)
-- Account status management (Active, Inactive, Suspended, Locked, Pending)
-- Timezone and localization support
-- Privacy and notification preferences
+## ✨ What Makes This Special?
 
-### 🔑 Permission System
-- **Dynamic permission system** supporting both RBAC and ABAC
-- **Hierarchical roles** with inheritance
-- **Time-based permissions** with expiration
-- **Resource-level permissions** for fine-grained access control
-- **Policy rules engine** for complex authorization logic
-- **Permission caching** for performance optimization
+- **🔒 Enterprise Security**: Government-grade security with MFA, RBAC/ABAC, and audit logging
+- **⚡ Production Ready**: Docker-containerized with PostgreSQL, Redis, and Celery
+- **🎯 No Reverse Proxy Needed**: Built-in rate limiting and security features
+- **📱 Modern Auth**: Firebase integration + traditional authentication
+- **🔧 Developer Friendly**: Comprehensive API docs, testing suite, and clear structure
+- **📊 Monitoring Built-in**: Health checks, logging, and error tracking
 
-### 🏗️ Architecture
-- **Docker containerization** with production-ready configuration
-- **PostgreSQL** database with optimized indexes
-- **Redis** caching and session storage
-- **Celery** for background task processing
-- **Direct Django deployment** with built-in security
-- **Comprehensive logging** with structured format
-- **Health checks** and monitoring endpoints
+---
 
-## Quick Start
+## 🎯 Perfect For
+
+- **SAAS Applications** requiring user management and subscriptions
+- **Enterprise Systems** needing advanced security and compliance
+- **API-First Applications** with mobile/web frontends
+- **Multi-tenant Platforms** with role-based access control
+- **Government/Financial Apps** requiring audit trails and security
+
+---
+
+## 🏗️ Tech Stack
+
+| Component | Technology | Purpose |
+|-----------|------------|---------|
+| **Backend** | Django 4.2 LTS + DRF | Stable, secure web framework |
+| **Database** | PostgreSQL | Production-grade relational database |
+| **Cache** | Redis | Session storage, caching, rate limiting |
+| **Task Queue** | Celery | Background jobs and async processing |
+| **Authentication** | Firebase + JWT | Modern auth with MFA support |
+| **Security** | Django Axes + Custom | Brute force protection and monitoring |
+| **Deployment** | Docker + Docker Compose | Containerized deployment |
+
+---
+
+## 🚀 Quick Start (5 Minutes)
 
 ### Prerequisites
-- Docker and Docker Compose
-- Python 3.11+ (for local development)
+- **Docker & Docker Compose** (Get it [here](https://docs.docker.com/get-docker/))
+- **Git** for cloning the repository
 
-### 1. Clone and Setup
-
+### Step 1: Clone & Setup
 ```bash
+# Clone the repository
 git clone <repository-url>
 cd docker-django-starter-kit
+
+# Copy environment template
 cp .env.example .env
 ```
 
-### 2. Configure Environment
-
-Edit `.env` file with your settings:
+### Step 2: Configure Environment
+Open `.env` file and update these essential settings:
 
 ```bash
-# Essential settings
-SECRET_KEY=your-super-secret-key-here
-DEBUG=False
-ALLOWED_HOSTS=your-domain.com,localhost
-CSRF_TRUSTED_ORIGINS=https://your-domain.com
+# � Security (Generate a secure key)
+SECRET_KEY=your-super-secret-key-here-make-it-long-and-random
 
-# Database
+# 🌐 Domain Settings
+ALLOWED_HOSTS=localhost,127.0.0.1,your-domain.com
+CSRF_TRUSTED_ORIGINS=http://localhost:8000,https://your-domain.com
+
+# 💾 Database (Use strong passwords)
 POSTGRES_DB=saas_app
 POSTGRES_USER=postgres
-POSTGRES_PASSWORD=your-secure-password
+POSTGRES_PASSWORD=your-secure-database-password
 
-# Firebase (optional)
-FIREBASE_PROJECT_ID=your-firebase-project
-FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
-FIREBASE_CLIENT_EMAIL=firebase-adminsdk-xxxxx@your-project.iam.gserviceaccount.com
+# 🔥 Firebase (Optional - for social login)
+FIREBASE_PROJECT_ID=your-firebase-project-id
+# Add other Firebase settings if needed
 ```
 
-### 3. Build and Run
-
+### Step 3: Launch Application
 ```bash
-# Build and start services
+# Build and start all services
 docker-compose up -d --build
 
-# Create default permissions and roles
+# Wait for services to start (check with)
+docker-compose ps
+
+# Initialize the database and create default roles/permissions
+docker-compose exec web python manage.py migrate
 docker-compose exec web python manage.py create_default_permissions
 
-# Create superuser
+# Create your admin account
 docker-compose exec web python manage.py createsuperuser
 ```
 
-### 4. Access the Application
+### Step 4: Verify Installation
+- **🌐 API Documentation**: http://localhost:8000/api/docs/
+- **⚙️ Admin Panel**: http://localhost:8000/admin/
+- **🔍 Health Check**: http://localhost:8000/health/
+- **📊 API Base**: http://localhost:8000/api/v1/
 
-- **API Documentation**: http://localhost:8000/api/docs/
-- **Admin Interface**: http://localhost:8000/admin/
-- **API Endpoints**: http://localhost:8000/api/v1/
+**🎉 That's it! Your application is running!**
 
-## API Documentation
+---
 
-### Authentication Endpoints
+## 📚 Understanding the Application
 
-#### Register User
-```http
-POST /api/v1/auth/register/
-Content-Type: application/json
+### 🔐 Security Features
 
-{
+#### **Multi-Layer Security Architecture**
+```
+┌────────────────────────────────┐
+│     🌐 Request Layer           │
+│  Rate Limiting + IP Filtering  │
+├────────────────────────────────┤
+│     🔐 Authentication Layer    │
+│  Firebase + JWT + MFA          │
+├────────────────────────────────┤
+│     🛡️ Authorization Layer     │
+│  RBAC + ABAC + Permissions     │
+├────────────────────────────────┤
+│     📊 Audit Layer             │
+│  Logging + Monitoring          │
+└────────────────────────────────┘
+```
+
+#### **Key Security Features**
+- **🔒 Strong Authentication**: 12+ character passwords, MFA support, account lockout
+- **🛡️ Authorization Control**: Role-based + Attribute-based access control
+- **🚫 Attack Prevention**: Rate limiting, brute force protection, suspicious activity detection
+- **📋 Compliance Ready**: Comprehensive audit logs, data encryption, GDPR compliance
+- **🔍 Monitoring**: Real-time security monitoring and alerting
+
+### 👥 User Management System
+
+#### **User Types & Roles**
+- **🔧 System Roles**: Super Admin, Admin, Manager
+- **👤 User Roles**: Employee, Client, Guest
+- **⚙️ Custom Roles**: Create your own with specific permissions
+
+#### **User Lifecycle**
+```
+Registration → Email Verification → Profile Setup → Role Assignment → Active User
+     ↓              ↓                   ↓              ↓              ↓
+  [Pending]    [Unverified]        [Inactive]     [Assigned]     [Active]
+```
+
+### 🔑 Permission System
+
+#### **How Permissions Work**
+1. **👤 Users** are assigned **🎭 Roles**
+2. **🎭 Roles** contain multiple **🔑 Permissions**
+3. **🔑 Permissions** can be **⏰ Time-limited** or **📍 Resource-specific**
+4. **🤖 System** checks permissions on every API request
+
+#### **Permission Types**
+- **📂 Resource**: Access to specific data (users, projects, reports)
+- **⚡ Action**: Specific operations (create, read, update, delete, export)
+- **🎯 Feature**: Application features (dashboard, billing, analytics)
+- **🔧 API**: API endpoint access
+- **👑 Admin**: Administrative functions
+
+---
+
+## 📖 Complete API Guide
+
+### 🔐 Authentication APIs
+
+#### **User Registration**
+```bash
+curl -X POST http://localhost:8000/api/v1/auth/register/ \
+  -H "Content-Type: application/json" \
+  -d '{
     "email": "user@example.com",
     "password": "SecurePassword123!",
     "password_confirm": "SecurePassword123!",
     "first_name": "John",
     "last_name": "Doe"
-}
+  }'
 ```
 
-#### Login
-```http
-POST /api/v1/auth/login/
-Content-Type: application/json
-
-{
+#### **User Login**
+```bash
+curl -X POST http://localhost:8000/api/v1/auth/login/ \
+  -H "Content-Type: application/json" \
+  -d '{
     "email": "user@example.com",
     "password": "SecurePassword123!"
-}
+  }'
 ```
 
-#### Firebase Login
-```http
-POST /api/v1/auth/firebase-login/
-Content-Type: application/json
-Authorization: Bearer <firebase-id-token>
-
-{
+#### **Firebase Social Login**
+```bash
+curl -X POST http://localhost:8000/api/v1/auth/firebase-login/ \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer <firebase-id-token>" \
+  -d '{
     "firebase_token": "<firebase-id-token>"
-}
+  }'
 ```
 
-### User Management Endpoints
+### 👤 User Management APIs
 
-#### Get Current User
-```http
-GET /api/v1/users/me/
-Authorization: Bearer <token>
+#### **Get Current User Profile**
+```bash
+curl -X GET http://localhost:8000/api/v1/users/me/ \
+  -H "Authorization: Bearer <your-jwt-token>"
 ```
 
-#### List Users (Admin)
-```http
-GET /api/v1/users/
-Authorization: Bearer <token>
+#### **List All Users** (Admin only)
+```bash
+curl -X GET http://localhost:8000/api/v1/users/ \
+  -H "Authorization: Bearer <admin-jwt-token>"
 ```
 
-#### Assign Role to User
-```http
-POST /api/v1/users/{user_id}/assign-role/
-Authorization: Bearer <token>
-Content-Type: application/json
-
-{
-    "role_id": "role-uuid"
-}
+#### **Assign Role to User**
+```bash
+curl -X POST http://localhost:8000/api/v1/users/{user_id}/assign-role/ \
+  -H "Authorization: Bearer <admin-jwt-token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "role_id": "role-uuid-here"
+  }'
 ```
 
-### Permission Management
+### 🔑 Permission Management APIs
 
-#### List Roles
-```http
-GET /api/v1/permissions/roles/
-Authorization: Bearer <token>
+#### **List Available Roles**
+```bash
+curl -X GET http://localhost:8000/api/v1/permissions/roles/ \
+  -H "Authorization: Bearer <your-jwt-token>"
 ```
 
-#### Assign Permission to Role
-```http
-POST /api/v1/permissions/roles/{role_id}/assign-permission/
-Authorization: Bearer <token>
-Content-Type: application/json
-
-{
-    "permission_id": "permission-uuid"
-}
+#### **Create New Role**
+```bash
+curl -X POST http://localhost:8000/api/v1/permissions/roles/ \
+  -H "Authorization: Bearer <admin-jwt-token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Project Manager",
+    "is_active": true
+  }'
 ```
 
-### Multi-Factor Authentication
-
-#### Setup MFA
-```http
-POST /api/v1/auth/mfa/setup/
-Authorization: Bearer <token>
+#### **Assign Permission to Role**
+```bash
+curl -X POST http://localhost:8000/api/v1/permissions/roles/{role_id}/assign-permission/ \
+  -H "Authorization: Bearer <admin-jwt-token>" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "permission_id": "permission-uuid-here"
+  }'
 ```
 
-#### Verify MFA
-```http
-POST /api/v1/auth/mfa/verify/
-Authorization: Bearer <token>
-Content-Type: application/json
+### 🔒 Multi-Factor Authentication
 
-{
+#### **Setup MFA**
+```bash
+curl -X POST http://localhost:8000/api/v1/auth/mfa/setup/ \
+  -H "Authorization: Bearer <your-jwt-token>"
+```
+
+#### **Verify MFA Token**
+```bash
+curl -X POST http://localhost:8000/api/v1/auth/mfa/verify/ \
+  -H "Authorization: Bearer <your-jwt-token>" \
+  -H "Content-Type: application/json" \
+  -d '{
     "token": "123456"
-}
+  }'
 ```
 
-## Security Configuration
+### 📊 System APIs
 
-### Government-Level Security Features
+#### **Health Check**
+```bash
+curl -X GET http://localhost:8000/health/
+```
 
-1. **Authentication Security**
-   - Minimum 12-character passwords with complexity requirements
-   - Account lockout after 5 failed attempts
-   - Session timeout and concurrent session limits
-   - MFA enforcement for privileged accounts
+#### **Security Test**
+```bash
+curl -X GET http://localhost:8000/security-test/
+```
 
-2. **Authorization Security**
-   - Principle of least privilege
-   - Role-based and attribute-based access control
-   - Time-based access controls
-   - Resource-level permissions
+---
 
-3. **Data Protection**
-   - Encryption at rest and in transit
-   - Audit logging for all sensitive operations
-   - Data anonymization and pseudonymization
-   - Secure data deletion
+## ⚙️ Configuration Guide
 
-4. **Network Security**
-   - Rate limiting and DDoS protection
-   - Security headers (HSTS, CSP, etc.)
-   - CORS configuration
-   - IP whitelist/blacklist support
+### 🔧 Environment Variables
 
-5. **Monitoring and Compliance**
-   - Comprehensive audit trails
-   - Security incident detection
-   - Compliance reporting
-   - Automated security scanning
-
-## Production Deployment
-
-### 1. Security Hardening
+Create and customize your `.env` file:
 
 ```bash
-# Generate secure secret key
-python -c 'from django.core.management.utils import get_random_secret_key; print(get_random_secret_key())'
-
-# Set production environment
-export DJANGO_ENV=production
-export DEBUG=False
-
-# Configure allowed hosts for your domain
-export ALLOWED_HOSTS=yourdomain.com,www.yourdomain.com
-export CSRF_TRUSTED_ORIGINS=https://yourdomain.com,https://www.yourdomain.com
-```
-
-### 2. Security Configuration
-
-The application includes built-in security features:
-
-- **Rate Limiting**: Configurable per endpoint
-- **IP Whitelisting**: For admin access
-- **Security Headers**: Automatically applied
-- **Brute Force Protection**: Enhanced with Django Axes
-- **Password Policy**: Complex validation rules
-- **Session Security**: Secure cookie settings
-
-### 3. Database Security
-
-```sql
--- Create dedicated database user
-CREATE USER saas_app WITH PASSWORD 'secure_password';
-GRANT CONNECT ON DATABASE saas_app TO saas_app;
-GRANT USAGE ON SCHEMA public TO saas_app;
-GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO saas_app;
-```
-
-### 4. Environment Variables
-
-Essential production settings:
-
-```env
-DJANGO_ENV=production
+# 🔐 Security Configuration
+SECRET_KEY=django-insecure-your-super-secret-key-here
 DEBUG=False
-SECRET_KEY=your-super-secure-secret-key
-ALLOWED_HOSTS=yourdomain.com,www.yourdomain.com
-CSRF_TRUSTED_ORIGINS=https://yourdomain.com,https://www.yourdomain.com
+DJANGO_ENV=production
 
-# Security Settings
-SESSION_COOKIE_SECURE=False  # Set to True if using HTTPS
-CSRF_COOKIE_SECURE=False     # Set to True if using HTTPS
-SECURE_SSL_REDIRECT=False    # Set to True if using HTTPS
-SECURE_HSTS_SECONDS=0        # Set to 31536000 if using HTTPS
+# 🌐 Domain & CORS Settings
+ALLOWED_HOSTS=localhost,127.0.0.1,yourdomain.com
+CSRF_TRUSTED_ORIGINS=http://localhost:8000,https://yourdomain.com
+CORS_ALLOWED_ORIGINS=http://localhost:3000,https://yourfrontend.com
 
-# Rate Limiting
+# 💾 Database Configuration
+POSTGRES_DB=saas_app
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=your-secure-password
+POSTGRES_HOST=db
+POSTGRES_PORT=5432
+
+# 🔴 Redis Configuration
+REDIS_URL=redis://redis:6379/0
+
+# 🔥 Firebase Authentication (Optional)
+FIREBASE_PROJECT_ID=your-firebase-project
+FIREBASE_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
+FIREBASE_CLIENT_EMAIL=firebase-adminsdk-xxx@your-project.iam.gserviceaccount.com
+
+# 📧 Email Configuration
+EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_USE_TLS=True
+EMAIL_HOST_USER=your-email@gmail.com
+EMAIL_HOST_PASSWORD=your-app-password
+
+# 🚨 Monitoring & Error Tracking
+SENTRY_DSN=your-sentry-dsn-here
+
+# 🔒 Security Settings
+SESSION_COOKIE_SECURE=False  # Set True for HTTPS
+CSRF_COOKIE_SECURE=False     # Set True for HTTPS
+SECURE_SSL_REDIRECT=False    # Set True for HTTPS
+
+# 🚦 Rate Limiting
 RATELIMIT_ENABLE=True
 
-# Admin IP Whitelist (comma-separated)
-ADMIN_ALLOWED_IPS=127.0.0.1,your-office-ip
-
-# Monitoring
-SENTRY_DSN=your-sentry-dsn
+# 🏠 Admin Security
+ADMIN_ALLOWED_IPS=127.0.0.1,192.168.1.0/24  # Comma-separated IPs/subnets
 ```
 
-### 5. Gunicorn Configuration
+### 🔒 Security Settings Explained
 
-The application includes an optimized Gunicorn configuration file (`gunicorn.conf.py`) with production-ready security and performance settings:
+| Setting | Purpose | Production Value |
+|---------|---------|------------------|
+| `SECRET_KEY` | Django encryption key | 50+ random characters |
+| `DEBUG` | Development mode | `False` |
+| `ALLOWED_HOSTS` | Allowed domains | Your actual domains |
+| `CSRF_TRUSTED_ORIGINS` | CSRF protection | Your HTTPS domains |
+| `SESSION_COOKIE_SECURE` | HTTPS-only cookies | `True` for HTTPS |
+| `ADMIN_ALLOWED_IPS` | Admin IP whitelist | Your office IPs |
 
-#### Key Security Features:
-- **Request size limits** to prevent abuse attacks
-- **Worker process isolation** with automatic restarts
-- **Comprehensive logging** for security monitoring
-- **Resource optimization** with shared memory usage
-- **Graceful shutdowns** to prevent data loss
+---
 
-#### Configuration Highlights:
-```python
-# Automatically scales workers based on CPU cores
-workers = multiprocessing.cpu_count() * 2 + 1
+## 🚢 Production Deployment
 
-# Security limits
-limit_request_line = 4094      # Max HTTP request line size
-limit_request_fields = 100     # Max number of header fields
-limit_request_field_size = 8190 # Max header field size
+### 🌐 Deploy to Production Server
 
-# Performance optimizations
-max_requests = 1000            # Restart workers after 1000 requests
-max_requests_jitter = 50       # Add randomness to prevent thundering herd
-worker_tmp_dir = "/dev/shm"    # Use shared memory for better performance
-```
-
-#### Production Deployment Command:
+#### **1. Prepare Server**
 ```bash
-# The entrypoint script automatically uses the optimized configuration
-# when DJANGO_ENV=production
-export DJANGO_ENV=production
-docker-compose up -d
+# Update system
+sudo apt update && sudo apt upgrade -y
+
+# Install Docker
+curl -fsSL https://get.docker.com -o get-docker.sh
+sh get-docker.sh
+
+# Install Docker Compose
+sudo apt install docker-compose-plugin -y
 ```
 
-#### Monitoring Gunicorn:
+#### **2. Clone and Configure**
 ```bash
-# Check worker status
-docker-compose exec web ps aux | grep gunicorn
+# Clone repository
+git clone <your-repo-url>
+cd docker-django-starter-kit
 
-# Monitor access logs
-docker-compose exec web tail -f /app/logs/gunicorn_access.log
-
-# Monitor error logs
-docker-compose exec web tail -f /app/logs/gunicorn_error.log
+# Set production environment
+cp .env.example .env
+# Edit .env with production values
+nano .env
 ```
 
-## Development
-
-### Running Tests
-
+#### **3. Deploy**
 ```bash
-# Run all tests
+# Build and start
+docker compose up -d --build
+
+# Initialize database
+docker compose exec web python manage.py migrate
+docker compose exec web python manage.py create_default_permissions
+docker compose exec web python manage.py createsuperuser
+
+# Collect static files
+docker compose exec web python manage.py collectstatic --noinput
+```
+
+### 🔒 Production Security Checklist
+
+- [ ] **Strong `SECRET_KEY`** (50+ random characters)
+- [ ] **`DEBUG=False`** in production
+- [ ] **HTTPS enabled** with valid SSL certificate
+- [ ] **Secure cookies** (`SESSION_COOKIE_SECURE=True`)
+- [ ] **Admin IP whitelist** configured
+- [ ] **Strong database passwords**
+- [ ] **Firewall configured** (ports 80, 443 only)
+- [ ] **Regular backups** scheduled
+- [ ] **Monitoring** set up (Sentry, logs)
+- [ ] **Domain verification** in `ALLOWED_HOSTS`
+
+### 📊 Monitoring & Maintenance
+
+#### **View Logs**
+```bash
+# Application logs
+docker compose logs web -f
+
+# Database logs
+docker compose logs db -f
+
+# Background tasks
+docker compose logs celery -f
+
+# All services
+docker compose logs -f
+```
+
+#### **Database Backup**
+```bash
+# Create backup
+docker compose exec db pg_dump -U postgres saas_app > backup_$(date +%Y%m%d_%H%M%S).sql
+
+# Restore backup
+docker compose exec -T db psql -U postgres saas_app < backup_file.sql
+```
+
+#### **Health Monitoring**
+```bash
+# Check all services
+docker compose ps
+
+# Resource usage
+docker stats
+
+# Application health
+curl http://localhost:8000/health/
+```
+
+---
+
+## 🧪 Development Guide
+
+### 🔧 Local Development Setup
+
+#### **Method 1: Using Docker (Recommended)**
+```bash
+# Clone repository
+git clone <repository-url>
+cd docker-django-starter-kit
+
+# Start development environment
+docker-compose -f docker-compose.yml -f docker-compose.override.yml up -d
+
+# Install development dependencies
+docker-compose exec web pip install -r requirements-dev.txt
+```
+
+#### **Method 2: Local Python Environment**
+```bash
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+pip install -r requirements-dev.txt
+
+# Setup database (PostgreSQL required)
+python manage.py migrate
+python manage.py create_default_permissions
+python manage.py createsuperuser
+```
+
+### 🧪 Testing
+
+#### **Run All Tests**
+```bash
+# Using Docker
 docker-compose exec web python manage.py test
 
-# Run specific app tests
-docker-compose exec web python manage.py test apps.users
-
-# Run with coverage
-docker-compose exec web coverage run --source='.' manage.py test
-docker-compose exec web coverage report
+# Local environment
+python manage.py test
 ```
 
-### Database Migrations
-
+#### **Run Specific Tests**
 ```bash
-# Create migrations
+# Test specific app
+docker-compose exec web python manage.py test apps.users
+
+# Test specific file
+docker-compose exec web python manage.py test apps.users.tests.test_models
+
+# Test with coverage
+docker-compose exec web coverage run --source='.' manage.py test
+docker-compose exec web coverage report
+docker-compose exec web coverage html  # HTML report
+```
+
+#### **Test Categories**
+- **Unit Tests**: Individual component testing
+- **Integration Tests**: API endpoint testing
+- **Security Tests**: Authentication and authorization
+- **Performance Tests**: Load and stress testing
+
+### 🔄 Database Operations
+
+#### **Migrations**
+```bash
+# Create new migrations
 docker-compose exec web python manage.py makemigrations
 
 # Apply migrations
 docker-compose exec web python manage.py migrate
+
+# Show migration status
+docker-compose exec web python manage.py showmigrations
+
+# Create empty migration
+docker-compose exec web python manage.py makemigrations --empty your_app_name
 ```
 
-### Background Tasks
+#### **Database Management**
+```bash
+# Access database shell
+docker-compose exec db psql -U postgres saas_app
 
+# Django database shell
+docker-compose exec web python manage.py dbshell
+
+# Reset database (⚠️ Destructive)
+docker-compose exec web python manage.py flush
+```
+
+### 📝 Code Quality
+
+#### **Linting & Formatting**
+```bash
+# Format code with Black
+docker-compose exec web black .
+
+# Check with flake8
+docker-compose exec web flake8 .
+
+# Sort imports with isort
+docker-compose exec web isort .
+
+# Type checking with mypy
+docker-compose exec web mypy .
+```
+
+### 🔄 Background Tasks
+
+#### **Celery Development**
 ```bash
 # Start Celery worker
 docker-compose exec celery celery -A core worker -l info
 
-# Start Celery beat scheduler
+# Start Celery beat (scheduler)
 docker-compose exec celery-beat celery -A core beat -l info
+
+# Monitor tasks
+docker-compose exec celery celery -A core flower
+# Visit: http://localhost:5555
 ```
-
-## Architecture Details
-
-### Permission System Architecture
-
-The application implements a hybrid RBAC/ABAC system:
-
-1. **RBAC (Role-Based Access Control)**
-   - Users are assigned roles
-   - Roles have permissions
-   - Hierarchical role inheritance
-
-2. **ABAC (Attribute-Based Access Control)**
-   - Context-aware permissions
-   - Time-based access controls
-   - Environmental attributes (IP, location, time)
-   - Resource attributes
-
-3. **Permission Evaluation Flow**
-   ```
-   Request → Authentication → Permission Check → ABAC Rules → Access Decision
-   ```
-
-### Security Layers
-
-```
-┌─────────────────────────────────────┐
-│            Application              │
-├─────────────────────────────────────┤
-│      Security Middleware           │
-├─────────────────────────────────────┤
-│        Permission System            │
-├─────────────────────────────────────┤
-│         Authentication              │
-├─────────────────────────────────────┤
-│         Rate Limiting               │
-├─────────────────────────────────────┤
-│         Network Security            │
-└─────────────────────────────────────┘
-```
-
-## Built-in Security Features
-
-### 1. **Authentication Security**
-   - Minimum 12-character passwords with complexity requirements
-   - Account lockout after 5 failed attempts with 1-hour cooldown
-   - Session timeout and concurrent session limits
-   - MFA enforcement for privileged accounts
-   - Password history tracking (prevents reuse of last 5 passwords)
-
-### 2. **Authorization Security**
-   - Principle of least privilege
-   - Role-based and attribute-based access control
-   - Time-based access controls
-   - Resource-level permissions
-   - IP-based access restrictions for admin interface
-
-### 3. **Network Security**
-   - Built-in rate limiting (per IP, per endpoint)
-   - Security headers (X-Frame-Options, CSP, XSS Protection)
-   - CORS configuration
-   - IP whitelist for admin access
-   - Suspicious activity detection
-
-### 4. **Data Protection**
-   - Encrypted sessions and cookies
-   - Audit logging for all sensitive operations
-   - Secure password hashing (Django's PBKDF2)
-   - Database connection security
-   - Input validation and sanitization
-
-### 5. **Monitoring and Compliance**
-   - Comprehensive audit trails
-   - Security incident detection and logging
-   - Real-time attack pattern recognition
-   - Failed authentication tracking
-   - Admin access monitoring
-
-### Common Issues
-
-1. **Database Connection Error**
-   ```bash
-   # Check database status
-   docker-compose exec db pg_isready
-   
-   # View database logs
-   docker-compose logs db
-   ```
-
-2. **Permission Denied Errors**
-   ```bash
-   # Check user permissions
-   docker-compose exec web python manage.py shell
-   >>> from django.contrib.auth import get_user_model
-   >>> User = get_user_model()
-   >>> user = User.objects.get(email='user@example.com')
-   >>> user.get_permissions()
-   ```
-
-3. **MFA Setup Issues**
-   ```bash
-   # Reset MFA for user
-   docker-compose exec web python manage.py shell
-   >>> user.mfa_enabled = False
-   >>> user.mfa_secret = ''
-   >>> user.save()
-   ```
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Add tests for new functionality
-4. Ensure all tests pass
-5. Submit a pull request
-
-## License
-
-This project is licensed under the MIT License - see the LICENSE file for details.
-
-## Support
-
-For support, please create an issue in the repository or contact the development team.
 
 ---
 
-**Note**: This is a production-ready template. Always review and customize security settings for your specific use case and compliance requirements.
+## 🛠️ Customization Guide
+
+### 🎨 Adding New Features
+
+#### **1. Create New Django App**
+```bash
+# Create app
+docker-compose exec web python manage.py startapp your_app_name
+
+# Add to INSTALLED_APPS in settings.py
+INSTALLED_APPS = [
+    # ...existing apps...
+    'apps.your_app_name',
+]
+```
+
+#### **2. Add API Endpoints**
+```python
+# apps/your_app_name/views.py
+from rest_framework import viewsets
+from rest_framework.permissions import IsAuthenticated
+from .models import YourModel
+from .serializers import YourModelSerializer
+
+class YourModelViewSet(viewsets.ModelViewSet):
+    queryset = YourModel.objects.all()
+    serializer_class = YourModelSerializer
+    permission_classes = [IsAuthenticated]
+```
+
+#### **3. Configure URLs**
+```python
+# apps/your_app_name/urls.py
+from rest_framework.routers import DefaultRouter
+from .views import YourModelViewSet
+
+router = DefaultRouter()
+router.register(r'your-models', YourModelViewSet)
+urlpatterns = router.urls
+
+# core/urls.py - Add to main URL configuration
+urlpatterns = [
+    # ...existing patterns...
+    path('api/v1/your-app/', include('apps.your_app_name.urls')),
+]
+```
+
+### 🔐 Custom Permissions
+
+#### **Create Custom Permission**
+```python
+# apps/permissions/custom_permissions.py
+from rest_framework.permissions import BasePermission
+from .utils import check_user_permission
+
+class CanAccessBillingPermission(BasePermission):
+    """
+    Custom permission to check if user can access billing
+    """
+    def has_permission(self, request, view):
+        return check_user_permission(
+            request.user, 
+            'access_billing', 
+            request=request
+        )
+
+# Use in views
+class BillingViewSet(viewsets.ModelViewSet):
+    permission_classes = [CanAccessBillingPermission]
+```
+
+#### **Add Permission to Database**
+```python
+# Create via Django shell
+from apps.permissions.models import Permission
+
+Permission.objects.create(
+    name="Can Access Billing",
+    description="Access to billing and payment features"
+)
+```
+
+### 🎯 Custom User Fields
+
+#### **Extend User Model**
+```python
+# apps/users/models.py
+from django.contrib.auth.models import AbstractUser
+
+class User(AbstractUser):
+    # Add your custom fields
+    company_name = models.CharField(max_length=200, blank=True)
+    subscription_tier = models.CharField(
+        max_length=20,
+        choices=[
+            ('free', 'Free'),
+            ('pro', 'Pro'),
+            ('enterprise', 'Enterprise'),
+        ],
+        default='free'
+    )
+    # ...existing fields...
+```
+
+### 📊 Custom Analytics
+
+#### **Add Analytics Tracking**
+```python
+# apps/analytics/models.py
+class UserActivity(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    action = models.CharField(max_length=100)
+    timestamp = models.DateTimeField(auto_now_add=True)
+    metadata = models.JSONField(default=dict)
+
+# apps/analytics/middleware.py
+class AnalyticsMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        # Track user activity
+        response = self.get_response(request)
+        # Log activity
+        return response
+```
+
+---
+
+## 🔍 Troubleshooting
+
+### 🚨 Common Issues & Solutions
+
+#### **🔌 Database Connection Issues**
+```bash
+# Problem: Can't connect to database
+# Solution: Check database status
+docker-compose ps db
+docker-compose logs db
+
+# Reset database connection
+docker-compose restart db
+docker-compose exec web python manage.py migrate
+```
+
+#### **🔑 Permission Denied Errors**
+```bash
+# Problem: User can't access certain endpoints
+# Solution: Check user permissions
+docker-compose exec web python manage.py shell
+>>> from django.contrib.auth import get_user_model
+>>> User = get_user_model()
+>>> user = User.objects.get(email='user@example.com')
+>>> user.user_permissions.all()
+>>> user.groups.all()
+```
+
+#### **🔒 MFA Issues**
+```bash
+# Problem: MFA setup failing
+# Solution: Reset MFA for user
+docker-compose exec web python manage.py shell
+>>> from django.contrib.auth import get_user_model
+>>> User = get_user_model()
+>>> user = User.objects.get(email='user@example.com')
+>>> user.mfa_enabled = False
+>>> user.mfa_secret = ''
+>>> user.save()
+```
+
+#### **🐌 Slow API Responses**
+```bash
+# Problem: API endpoints are slow
+# Solutions:
+# 1. Check Redis connection
+docker-compose logs redis
+
+# 2. Monitor database queries
+docker-compose exec web python manage.py shell
+>>> from django.db import connection
+>>> print(len(connection.queries))
+
+# 3. Check Celery workers
+docker-compose logs celery
+```
+
+#### **📝 Migration Issues**
+```bash
+# Problem: Migration conflicts
+# Solution: Reset migrations (⚠️ Development only)
+docker-compose exec web python manage.py migrate your_app_name zero
+docker-compose exec web python manage.py makemigrations your_app_name
+docker-compose exec web python manage.py migrate
+
+# For production: Create merge migration
+docker-compose exec web python manage.py makemigrations --merge
+```
+
+### 📞 Getting Help
+
+#### **Debug Mode**
+```python
+# For development debugging
+DEBUG = True
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'handlers': {
+        'console': {
+            'class': 'logging.StreamHandler',
+        },
+    },
+    'loggers': {
+        'django': {
+            'handlers': ['console'],
+            'level': 'DEBUG',
+        },
+    },
+}
+```
+
+#### **Performance Profiling**
+```bash
+# Install django-debug-toolbar for development
+pip install django-debug-toolbar
+
+# Add to development settings
+INSTALLED_APPS = [
+    # ...
+    'debug_toolbar',
+]
+
+MIDDLEWARE = [
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
+    # ...existing middleware...
+]
+```
+
+---
+
+## 📚 Additional Resources
+
+### 📖 Documentation Links
+- **[Django Documentation](https://docs.djangoproject.com/)**
+- **[Django REST Framework](https://www.django-rest-framework.org/)**
+- **[Docker Documentation](https://docs.docker.com/)**
+- **[PostgreSQL Documentation](https://www.postgresql.org/docs/)**
+- **[Redis Documentation](https://redis.io/documentation)**
+- **[Celery Documentation](https://docs.celeryproject.org/)**
+
+### 🎓 Learning Resources
+- **[Django for Beginners](https://djangoforbeginners.com/)**
+- **[DRF Tutorial](https://www.django-rest-framework.org/tutorial/quickstart/)**
+- **[Docker Tutorial](https://docker-curriculum.com/)**
+- **[API Design Best Practices](https://restfulapi.net/)**
+
+### 🏗️ Architecture Patterns
+- **[Clean Architecture](https://blog.cleancoder.com/uncle-bob/2012/08/13/the-clean-architecture.html)**
+- **[Domain-Driven Design](https://martinfowler.com/bliki/DomainDrivenDesign.html)**
+- **[Microservices Patterns](https://microservices.io/patterns/)**
+
+---
+
+## 🤝 Contributing
+
+We welcome contributions! Here's how to get started:
+
+### 🔄 Contribution Workflow
+
+1. **🍴 Fork the repository**
+2. **🌿 Create a feature branch**
+   ```bash
+   git checkout -b feature/your-feature-name
+   ```
+3. **💻 Make your changes**
+4. **🧪 Add/update tests**
+5. **✅ Ensure all tests pass**
+   ```bash
+   docker-compose exec web python manage.py test
+   ```
+6. **📝 Update documentation if needed**
+7. **🚀 Submit a pull request**
+
+### 📋 Contribution Guidelines
+
+- **Code Style**: Follow PEP 8 and use Black for formatting
+- **Tests**: Add tests for new features
+- **Documentation**: Update README and docstrings
+- **Security**: Security-related changes need extra review
+- **Performance**: Profile performance-critical changes
+
+### 🐛 Bug Reports
+
+When reporting bugs, please include:
+- **Environment details** (OS, Python version, Docker version)
+- **Steps to reproduce** the issue
+- **Expected vs actual behavior**
+- **Log files** or error messages
+- **Screenshots** if applicable
+
+### 💡 Feature Requests
+
+For new features, please:
+- **Describe the use case** and problem it solves
+- **Provide examples** of how it would be used
+- **Consider the impact** on existing functionality
+- **Discuss the implementation** approach
+
+---
+
+## 📄 License
+
+This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) file for details.
+
+### 📋 License Summary
+- ✅ **Commercial Use**: Use for commercial projects
+- ✅ **Modification**: Modify the code
+- ✅ **Distribution**: Distribute the code
+- ✅ **Private Use**: Use privately
+- ❗ **Liability**: No warranty provided
+- ❗ **Attribution**: Credit the original authors
+
+---
+
+## 🆘 Support & Community
+
+### 💬 Getting Support
+
+- **📚 Documentation**: Check this README and inline documentation
+- **🐛 Issues**: Create a GitHub issue for bugs
+- **💡 Discussions**: Use GitHub Discussions for questions
+- **📧 Email**: Contact the maintainers for security issues
+
+### 🌟 Show Your Support
+
+If this project helped you, please:
+- ⭐ **Star the repository**
+- 🍴 **Fork it** for your own projects
+- 📢 **Share it** with others
+- 🤝 **Contribute** back to the community
+
+---
+
+## 🏆 Acknowledgments
+
+Special thanks to:
+- **Django Community** for the amazing framework
+- **DRF Team** for the REST framework
+- **Security Researchers** for best practices
+- **Open Source Contributors** for inspiration
+- **Community Members** for feedback and testing
+
+---
+
+<div align="center">
+
+**🚀 Ready to build amazing SAAS applications?**
+
+[Get Started](#-quick-start-5-minutes) | [View Docs](#-complete-api-guide) | [Join Community](#-support--community)
+
+Made with ❤️ by developers, for developers
+
+</div>
