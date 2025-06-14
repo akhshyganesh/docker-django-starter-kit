@@ -30,7 +30,7 @@ This starter kit provides everything you need to build a scalable SAAS applicati
 ## 🏗️ Tech Stack
 
 | Component | Technology | Purpose |
-|-----------|------------|---------|
+| --------- | ---------- | ------- |
 | **Backend** | Django 4.2 LTS + DRF | Stable, secure web framework |
 | **Database** | PostgreSQL | Production-grade relational database |
 | **Cache** | Redis | Session storage, caching, rate limiting |
@@ -109,21 +109,13 @@ docker-compose exec web python manage.py createsuperuser
 ### 🔐 Security Features
 
 #### **Multi-Layer Security Architecture**
-```
-┌────────────────────────────────┐
-│     🌐 Request Layer           │
-│  Rate Limiting + IP Filtering  │
-├────────────────────────────────┤
-│     🔐 Authentication Layer    │
-│  Firebase + JWT + MFA          │
-├────────────────────────────────┤
-│     🛡️ Authorization Layer     │
-│  RBAC + ABAC + Permissions     │
-├────────────────────────────────┤
-│     📊 Audit Layer             │
-│  Logging + Monitoring          │
-└────────────────────────────────┘
-```
+
+| Layer | Components | Description |
+| ----- | ---------- | ----------- |
+| 🌐 **Request Layer** | Rate Limiting + IP Filtering | Controls incoming traffic and prevents abuse |
+| 🔐 **Authentication Layer** | Firebase + JWT + MFA | Verifies user identity with multi-factor auth |
+| 🛡️ **Authorization Layer** | RBAC + ABAC + Permissions | Controls access based on roles and attributes |
+| 📊 **Audit Layer** | Logging + Monitoring | Tracks all activities for compliance and security |
 
 #### **Key Security Features**
 - **🔒 Strong Authentication**: 12+ character passwords, MFA support, account lockout
@@ -140,11 +132,14 @@ docker-compose exec web python manage.py createsuperuser
 - **⚙️ Custom Roles**: Create your own with specific permissions
 
 #### **User Lifecycle**
-```
-Registration → Email Verification → Profile Setup → Role Assignment → Active User
-     ↓              ↓                   ↓              ↓              ↓
-  [Pending]    [Unverified]        [Inactive]     [Assigned]     [Active]
-```
+
+| Step | Process | Status |
+| ---- | ------- | ------ |
+| 1️⃣ | **Registration** | `[Pending]` |
+| 2️⃣ | **Email Verification** | `[Unverified]` |
+| 3️⃣ | **Profile Setup** | `[Inactive]` |
+| 4️⃣ | **Role Assignment** | `[Assigned]` |
+| 5️⃣ | **Active User** | `[Active]` |
 
 ### 🔑 Permission System
 
@@ -343,7 +338,7 @@ ADMIN_ALLOWED_IPS=127.0.0.1,192.168.1.0/24  # Comma-separated IPs/subnets
 ### 🔒 Security Settings Explained
 
 | Setting | Purpose | Production Value |
-|---------|---------|------------------|
+| ------- | ------- | ---------------- |
 | `SECRET_KEY` | Django encryption key | 50+ random characters |
 | `DEBUG` | Development mode | `False` |
 | `ALLOWED_HOSTS` | Allowed domains | Your actual domains |
