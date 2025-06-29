@@ -31,13 +31,22 @@ DJANGO_APPS = [
     'django.contrib.staticfiles',
 ]
 
-THIRD_PARTY_APPS = [
-    'rest_framework',
-    'rest_framework.authtoken',
-    'knox',
+# Read DRF enable flag from environment
+ENABLE_DRF = config('ENABLE_DRF', default=True, cast=bool)
+
+# Conditionally add DRF and related apps
+THIRD_PARTY_APPS = []
+if ENABLE_DRF:
+    THIRD_PARTY_APPS += [
+        'rest_framework',
+        'rest_framework.authtoken',
+        'knox',
+        'django_filters',
+        'drf_spectacular',
+    ]
+# Always include these
+THIRD_PARTY_APPS += [
     'corsheaders',
-    'django_filters',
-    'drf_spectacular',
     'guardian',
     'axes',
     'django_celery_beat',
@@ -143,33 +152,34 @@ MEDIA_ROOT = BASE_DIR / 'mediafiles'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # REST Framework Configuration
-REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': [
-        'knox.auth.TokenAuthentication',
-        'apps.authentication.backends.FirebaseAuthentication',
-        'rest_framework.authentication.SessionAuthentication',
-    ],
-    'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.IsAuthenticated',
-        'apps.permissions.permissions.DynamicPermission',
-    ],
-    'DEFAULT_RENDERER_CLASSES': [
-        'rest_framework.renderers.JSONRenderer',
-    ],
-    'DEFAULT_PARSER_CLASSES': [
-        'rest_framework.parsers.JSONParser',
-        'rest_framework.parsers.FormParser',
-        'rest_framework.parsers.MultiPartParser',
-    ],
-    'DEFAULT_FILTER_BACKENDS': [
-        'django_filters.rest_framework.DjangoFilterBackend',
-        'rest_framework.filters.SearchFilter',
-        'rest_framework.filters.OrderingFilter',
-    ],
-    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
-    'PAGE_SIZE': 20,
-    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
-    'EXCEPTION_HANDLER': 'apps.core.exceptions.custom_exception_handler',
+if ENABLE_DRF:
+    REST_FRAMEWORK = {
+        'DEFAULT_AUTHENTICATION_CLASSES': [
+            'knox.auth.TokenAuthentication',
+            'apps.authentication.backends.FirebaseAuthentication',
+            'rest_framework.authentication.SessionAuthentication',
+        ],
+        'DEFAULT_PERMISSION_CLASSES': [
+            'rest_framework.permissions.IsAuthenticated',
+            'apps.permissions.permissions.DynamicPermission',
+        ],
+        'DEFAULT_RENDERER_CLASSES': [
+            'rest_framework.renderers.JSONRenderer',
+        ],
+        'DEFAULT_PARSER_CLASSES': [
+            'rest_framework.parsers.JSONParser',
+            'rest_framework.parsers.FormParser',
+            'rest_framework.parsers.MultiPartParser',
+        ],
+        'DEFAULT_FILTER_BACKENDS': [
+            'django_filters.rest_framework.DjangoFilterBackend',
+            'rest_framework.filters.SearchFilter',
+            'rest_framework.filters.OrderingFilter',
+        ],
+        'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+        'PAGE_SIZE': 20,
+        'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+        'EXCEPTION_HANDLER': 'apps.core.exceptions.custom_exception_handler',
 }
 
 # Knox Token Authentication
@@ -295,19 +305,21 @@ GUARDIAN_RENDER_403 = False
 # Django Axes (Enhanced Brute Force Protection)
 AXES_FAILURE_LIMIT = 3  # Reduced from 5 for better security
 AXES_COOLOFF_TIME = 2  # 2 hours instead of 1
-AXES_LOCKOUT_CALLABLE = 'axes.lockout.lockout'
+AXES_LOCKOUT_CALLABLE = 'axes.lockout.lockout'  # Ensure this callable exists and is valid
 AXES_ENABLE_ADMIN = True
 AXES_LOCK_OUT_AT_FAILURE = True
-AXES_USE_USER_AGENT = True
-AXES_LOCK_OUT_BY_COMBINATION_USER_AND_IP = True
-AXES_RESET_ON_SUCCESS = True
-AXES_LOCKOUT_TEMPLATE = None
-AXES_LOCKOUT_URL = None
 AXES_VERBOSE = True
 AXES_LOG_LOCK_OUT_AT_FAILURE = True
 AXES_NEVER_LOCKOUT_WHITELIST = True
 AXES_IP_WHITELIST = ['127.0.0.1', '::1']  # Only allow localhost
 AXES_NEVER_LOCKOUT_GET = True  # Don't lockout on GET requests
+
+# Update AUTHENTICATION_BACKENDS to include AxesStandaloneBackend and Guardian
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'guardian.backends.ObjectPermissionBackend',
+    'axes.backends.AxesStandaloneBackend',
+]
 
 # API Documentation
 SPECTACULAR_SETTINGS = {
@@ -385,3 +397,7 @@ if SENTRY_DSN:
         send_default_pii=True,
         environment=config('DJANGO_ENV', default='development'),
     )
+
+# Ensure Firebase configuration is set
+if not FIREBASE_CONFIG['project_id']:
+    print("WARNING Firebase configuration not found. Firebase authentication will be disabled.")

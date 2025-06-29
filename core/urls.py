@@ -18,7 +18,11 @@ from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
-from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
+try:
+    from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView, SpectacularRedocView
+    DRF_DOCS_ENABLED = True
+except ImportError:
+    DRF_DOCS_ENABLED = False
 from apps.core.views import health_check, security_headers_test
 
 urlpatterns = [
@@ -28,16 +32,19 @@ urlpatterns = [
     
     # Admin
     path('admin/', admin.site.urls),
-    
-    # API Documentation
-    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
-    path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
-    path('api/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
-    
-    # API endpoints
-    path('api/v1/auth/', include('apps.authentication.urls')),
-    path('api/v1/users/', include('apps.users.urls')),
-    path('api/v1/permissions/', include('apps.permissions.urls')),
+]
+
+if getattr(settings, 'ENABLE_DRF', True):
+    if DRF_DOCS_ENABLED:
+        urlpatterns += [
+            path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
+            path('api/docs/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
+            path('api/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
+        ]
+    urlpatterns += [
+        path('api/v1/auth/', include('apps.authentication.urls')),
+        path('api/v1/users/', include('apps.users.urls')),
+        path('api/v1/permissions/', include('apps.permissions.urls')),
 ]
 
 # Serve static and media files in development
